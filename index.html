@@ -403,6 +403,14 @@
 </div>
 
 <script>
+  // 더블탭 확대 방지
+  let lastTap = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) e.preventDefault();
+    lastTap = now;
+  }, { passive: false });
+
   // 별
   const starsEl = document.getElementById('stars');
   for (let i = 0; i < 120; i++) {
