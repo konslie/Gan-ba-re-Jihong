@@ -452,7 +452,7 @@
     const { count, last_decay } = rows[0];
 
     const minutesPassed = (Date.now() - new Date(last_decay).getTime()) / 60000;
-    const decayPct = Math.floor(minutesPassed / 10) * DECAY_PER_10MIN;
+    const decayPct = (minutesPassed / 10) * DECAY_PER_10MIN;
     const newPct = Math.max(MIN, Math.min(MAX, count - decayPct));
 
     if (decayPct > 0) {
