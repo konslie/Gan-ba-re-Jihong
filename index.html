@@ -492,14 +492,15 @@
   }
 
   function render() {
-    const pct = Math.round(currentPct);
+    const pct = Math.min(MAX, currentPct);
+    const display = pct >= MAX ? '100.0' : pct.toFixed(1);
     fill.style.width = pct + '%';
     if (pct >= MAX) {
-      note.textContent = '이마 스케일: 100% 🌌 우주 정복 완료!';
+      note.textContent = '이마 스케일: 100.0% 🌌 우주 정복 완료!';
       btn.textContent = '🌌 우주 이마 달성!';
       btn.classList.add('maxed');
     } else {
-      note.textContent = `현재 지홍님 이마 스케일: ${pct}% (성장 중)`;
+      note.textContent = `현재 지홍님 이마 스케일: ${display}% (성장 중)`;
       btn.textContent = '💪 응원하기';
       btn.classList.remove('maxed');
     }
