@@ -337,7 +337,7 @@
       <p style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:4px;">
         여러분의 응원으로 지홍님의 이마 스케일을<br>
         <strong style="color:rgba(255,255,255,0.85);">우주적 스케일</strong>로 넓힐 수 있습니다 🌌<br>
-        <span style="color:rgba(249,168,212,0.7);font-size:13px;">⚠️ 아무도 안 누르면 30분마다 10%씩 떨어져요!</span><br>
+        <span style="color:rgba(249,168,212,0.7);font-size:13px;">⚠️ 30분마다 10%씩 떨어져요!</span><br>
         <span style="color:rgba(255,255,255,0.3);font-size:12px;">다른 사람의 클릭은 새로고침하면 반영됩니다</span>
       </p>
       <button class="cheer-btn" id="cheerBtn" onclick="doCheer(event)">💪 응원하기</button>
@@ -464,14 +464,16 @@
     const { count, last_decay } = rows[0];
 
     const minutesPassed = (Date.now() - new Date(last_decay).getTime()) / 60000;
-    const decayPct = (minutesPassed / 30) * DECAY_PER_10MIN;
+    const decayTicks = Math.floor(minutesPassed / 30); // 30분 단위로만 깎임
+    const decayPct = decayTicks * DECAY_PER_10MIN;
     const newPct = Math.max(MIN, Math.min(MAX, count - decayPct));
 
-    if (decayPct > 0) {
-      // decay 반영해서 저장
+    if (decayTicks > 0) {
+      // decay 반영해서 저장 (last_decay는 30분 단위로 앞당겨서 저장)
+      const newLastDecay = new Date(new Date(last_decay).getTime() + decayTicks * 30 * 60000);
       await apiFetch('/rest/v1/jihong_cheers?id=eq.1', {
         method: 'PATCH',
-        body: JSON.stringify({ count: newPct, last_decay: new Date().toISOString() })
+        body: JSON.stringify({ count: newPct, last_decay: newLastDecay.toISOString() })
       });
     }
 
