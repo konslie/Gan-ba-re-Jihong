@@ -109,12 +109,48 @@
       background: linear-gradient(90deg, #fde68a, #f97316, #ef4444);
       border-radius: 99px;
       width: 0;
-      animation: fillUp 1.8s 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+      transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
     }
-    @keyframes fillUp { to { width: 73%; } }
     .meter-note {
       font-size: 12px; color: rgba(255,255,255,0.35);
       margin-top: 8px; text-align: right;
+    }
+
+    /* 응원 버튼 */
+    .cheer-btn-wrap {
+      margin-top: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .cheer-btn {
+      background: linear-gradient(135deg, #a78bfa, #f9a8d4);
+      border: none; border-radius: 99px;
+      padding: 16px 40px;
+      font-size: 20px; font-weight: 800;
+      color: white; cursor: pointer;
+      box-shadow: 0 8px 30px rgba(167,139,250,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 1px;
+    }
+    .cheer-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(167,139,250,0.6); }
+    .cheer-btn:active { transform: scale(0.93); }
+    .cheer-btn.maxed {
+      background: linear-gradient(135deg, #fde68a, #f97316);
+      box-shadow: 0 8px 30px rgba(249,115,22,0.5);
+      cursor: default;
+    }
+    .cheer-count {
+      font-size: 13px; color: rgba(255,255,255,0.4);
+    }
+
+    /* 버튼 클릭 팝 이펙트 */
+    .pop {
+      position: fixed; pointer-events: none; z-index: 999;
+      font-size: 28px;
+      animation: popUp 0.8s ease forwards;
+    }
+    @keyframes popUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
     }
 
     /* 카드 그리드 */
@@ -282,9 +318,15 @@
         <span>🌌 우주적 이마 ←</span>
       </div>
       <div class="meter-track">
-        <div class="meter-fill"></div>
+        <div class="meter-fill" id="meterFill"></div>
       </div>
-      <div class="meter-note">현재 지홍님 이마 스케일: 73% (성장 중)</div>
+      <div class="meter-note" id="meterNote"></div>
+    </div>
+
+    <!-- 응원 버튼 -->
+    <div class="cheer-btn-wrap">
+      <button class="cheer-btn" id="cheerBtn" onclick="doCheer(event)">💪 응원하기</button>
+      <span class="cheer-count" id="cheerCount"></span>
     </div>
 
   </div>
@@ -372,6 +414,65 @@
   }
   spawnConfetti();
   setInterval(spawnConfetti, 3000);
+
+  // 게이지 & 응원 버튼
+  const BASE = 73;
+  const MAX = 100;
+  const STEP = 1; // 클릭당 1%
+  const popEmojis = ['💪','🔥','👑','⭐','🎉','✨','💫','🙌'];
+
+  const fill = document.getElementById('meterFill');
+  const note = document.getElementById('meterNote');
+  const btn  = document.getElementById('cheerBtn');
+  const cnt  = document.getElementById('cheerCount');
+
+  let clicks = parseInt(localStorage.getItem('jihong_cheers') || '0');
+
+  function getPercent() {
+    return Math.min(BASE + clicks * STEP, MAX);
+  }
+
+  function render() {
+    const pct = getPercent();
+    fill.style.width = pct + '%';
+    if (pct >= MAX) {
+      note.textContent = '이마 스케일: 100% 🌌 우주 정복 완료!';
+      btn.textContent = '🌌 우주 이마 달성!';
+      btn.classList.add('maxed');
+      btn.onclick = null;
+    } else {
+      note.textContent = `현재 지홍님 이마 스케일: ${pct}% (성장 중)`;
+    }
+    cnt.textContent = clicks > 0 ? `응원 ${clicks}번 누름` : '';
+  }
+
+  function doCheer(e) {
+    const pct = getPercent();
+    if (pct >= MAX) return;
+    clicks++;
+    localStorage.setItem('jihong_cheers', clicks);
+    render();
+
+    // 팝 이펙트
+    const emoji = popEmojis[Math.floor(Math.random() * popEmojis.length)];
+    const pop = document.createElement('div');
+    pop.className = 'pop';
+    pop.textContent = emoji;
+    pop.style.left = (e.clientX - 20) + 'px';
+    pop.style.top  = (e.clientY - 20) + 'px';
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 800);
+
+    // 100% 달성 시 폭죽
+    if (getPercent() >= MAX) spawnConfetti();
+  }
+
+  // 초기 렌더 (애니메이션 없이 바로 세팅)
+  requestAnimationFrame(() => { fill.style.transition = 'none'; fill.style.width = '0'; });
+  setTimeout(() => {
+    fill.style.transition = 'width 1.8s cubic-bezier(0.16,1,0.3,1)';
+    render();
+  }, 100);
 </script>
 </body>
 </html>
