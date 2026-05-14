@@ -509,8 +509,7 @@
       btn.textContent = '💪 응원하기';
       btn.classList.remove('maxed');
     }
-    const total = Math.round(currentPct * CLICKS_PER_PCT);
-    cnt.textContent = total > 0 ? `총 응원 클릭 약 ${total}번` : '';
+    cnt.textContent = '';
   }
 
   function doCheer(e) {
